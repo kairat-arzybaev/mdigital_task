@@ -1,57 +1,82 @@
 import 'package:flutter/material.dart';
-import 'package:mdigital_task/presentation/widgets/maker_list.dart';
+import 'package:mdigital_task/data/car_data_service.dart';
+import 'package:mdigital_task/presentation/widgets/car_maker_list.dart';
 
-import '../../data/local/cars_data.dart';
-import '../../data/models/car.dart';
+import '../../domain/models/car_maker.dart';
+import 'car_list_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Car> cars = carsData.map((json) => Car.fromJson(json)).toList();
-    final Map<String, int> makerCounts = {};
+  State<HomePage> createState() => _HomePageState();
+}
 
-    for (var car in cars) {
-      final String maker = car.maker;
-      if (makerCounts.containsKey(maker)) {
-        makerCounts[maker] = makerCounts[maker]! + 1;
-      } else {
-        makerCounts[maker] = 1;
-      }
+class _HomePageState extends State<HomePage> {
+  List<CarMaker> carMakers = [];
+  Map<String, int> carMap = {};
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  void fetchData() {
+    final makers = CarDataService().fetchCarMakers();
+    final cars = CarDataService().fetchCars();
+    final carCountMap = <String, int>{};
+    for (final carMaker in makers) {
+      final count = cars.where((car) => car.maker == carMaker.name).length;
+      carCountMap[carMaker.name] = count;
     }
+    setState(() {
+      carMakers = makers;
+      carMap = carCountMap;
+    });
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Car Makers'),
+          centerTitle: true,
+          titleTextStyle: Theme.of(context).textTheme.displaySmall,
+          toolbarHeight: 100,
         ),
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView.separated(
-              separatorBuilder: (context, index) => const Divider(),
-              itemCount: makerCounts.length,
-              itemBuilder: (context, index) {
-                final makerCountsList = makerCounts.entries.toList();
-                return MakerList(
-                  maker: makerCountsList[index].key,
-                  count: makerCountsList[index].value,
-                  onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => MakerPage(
-                    //       selectedMaker: makerCountsList[index].key,
-                    //       cars: cars,
-                    //     ),
-                    //   ),
-                    // );
-                  },
-                );
-              },
-            ),
-          ),
+          child: carMakers.isEmpty
+              ? const CircularProgressIndicator()
+              : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ListView.separated(
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemCount: carMakers.length,
+                    itemBuilder: (context, index) {
+                      final carMaker = carMakers[index];
+                      return CarMakerList(
+                        maker: carMaker.name,
+                        count: carMap[carMaker.name]!,
+                        imagePath: carMaker.logo,
+                        onTap: () {
+                          final cars =
+                              CarDataService().fetchCarsForMaker(carMaker);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CarListPage(
+                                carMaker: carMaker,
+                                carsForMaker: cars,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
         ),
       ),
     );

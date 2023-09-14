@@ -1,6 +1,6 @@
 // maker_page.dart
 import 'package:flutter/material.dart';
-import '../../data/models/car.dart';
+import '../../domain/models/car.dart';
 
 class MakerPage extends StatelessWidget {
   final String selectedMaker;

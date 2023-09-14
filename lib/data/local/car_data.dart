@@ -1,4 +1,12 @@
-const List<Map<String, dynamic>> carsData = [
+const List<Map<String, String>> carMaker = [
+  {"name": "Hyundai", "logo": 'assets/images/hyundai.jpg'},
+  {"name": "Honda", "logo": 'assets/images/honda.jpg'},
+  {"name": "Chevrolet", "logo": 'assets/images/chevrolet.png'},
+  {"name": "Toyota", "logo": 'assets/images/toyota.jpg'},
+  {"name": "Ford", "logo": 'assets/images/ford.png'},
+];
+
+const List<Map<String, dynamic>> carsForSale = [
   {
     "maker": "Hyundai",
     "model": "Verna 1.6 SX",
